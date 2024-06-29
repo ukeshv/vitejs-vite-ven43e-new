@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header><h1>Men's Outwear</h1></header>
+    <section>
+      <!-------Search Product------>
+      <div class="search-wrap">
+        <form>
+          <input
+            type="text"
+            name=""
+            id="search-item"
+            placeholder="Search Product"
+            onkeyup="searchProduct()"
+          />
+        </form>
+      </div>
+      <!---------Category Filter---------->
+      <div class="main">
+        <div class="filterBox">
+          <h2>Filter</h2>
+          <div>
+            <h3>Category</h3>
+            <div class="CategoryList"></div>
+          </div>
+        </div>
+        <!--------Product List-------->
+        <div class="product" id="product-list"></div>
+      </div>
+      <!-----------Load More----------->
+      <footer>
+        <div class="btncontainer">
+          <button class="load-more">Load More</button>
+        </div>
+      </footer>
+    </section>
+
+    <script>
+      let productDiv = document.querySelector('.product');
+      var CategoryListDiv = document.querySelector('.CategoryList');
+      let allCat = [];
+      // Fetch product using async await function
+      let displayProduct = async (allCheckCat = []) => {
+        try {
+          productDiv.innerHTML = '';
+          let product = await fetch('https://fakestoreapi.com/products');
+          let finalProduct = await product.json();
+          finalProduct.forEach((element) => {
+            if (!allCat.includes(element.category)) {
+              CategoryListDiv.innerHTML += `<label>
+                <input type="checkbox" onclick='categoryFilter()' value="${element.category}"/> ${element.category}
+                </label>`;
+              allCat.push(element.category);
+            }
+            if (allCheckCat.length == 0) {
+              allCheckCat = allCat;
+            }
+            if (allCheckCat.includes(element.category)) {
+              productDiv.innerHTML += `<div class="productItems">
+            <img src="${element.image}" alt=""/>
+            <div class="p-details">
+            <h4>${element.title}</h4>
+            <p>$${element.price}</p>
+            </div>
+          </div>`;
+            }
+          });
+        } catch (e) {
+          productDiv.innerHTML = `<div class="error-msg" role="alert">
+        Some error occurred while fetching the product
+      </div>`;
+        }
+      };
+
+      displayProduct();
+
+      // category filter function
+      let categoryFilter = () => {
+        let checkInput = document.querySelectorAll("input[type='checkbox']");
+        let checkdata = [];
+        checkInput.forEach((e) => {
+          if (e.checked) {
+            checkdata.push(e.value);
+          }
+        });
+        displayProduct(checkdata);
+      };
+
+      // load more function
+      const loadmore = document.querySelector('.load-more');
+      let currentItems = 10;
+      loadmore.addEventListener('click', (e) => {
+        const elementList = [
+          ...document.querySelectorAll('.product .productItems'),
+        ];
+        for (let i = currentItems; i < currentItems + 10; i++) {
+          setTimeout(function () {
+            if (elementList[i]) {
+              elementList[i].style.display = 'block';
+            }
+          }, 500);
+        }
+        currentItems += 10;
+        if (currentItems >= elementList.length) {
+          event.target.style.display = 'none';
+        }
+      });
+
+      // search product function
+      const searchProduct = () => {
+        const searchbox = document
+          .getElementById('search-item')
+          .value.toUpperCase();
+        const storeitems = document.getElementById('product-list');
+        const product = document.querySelectorAll('.productItems');
+        const pname = document.getElementsByTagName('h4');
+        for (var i = 0; i < pname.length; i++) {
+          let match = product[i].getElementsByTagName('h4')[0];
+          if (match) {
+            let textvalue = match.textContent || match.innerHTML;
+            if (textvalue.toUpperCase().indexOf(searchbox) > -1) {
+              product[i].style.display = '';
+            } else {
+              product[i].style.display = 'none';
+            }
+          }
+        }
+      };
+    </script>
+  </body>
+</html>
